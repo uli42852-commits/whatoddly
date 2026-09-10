@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #1b1b3a;
+  color: #f6f3ed;
+  font-family: "Space Grotesk", "Pretendard", -apple-system, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.site-header {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+}
+
+.site-header .brand {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f2b84b;
+  text-decoration: none;
+}
+
+.site-header .nav {
+  display: flex;
+  gap: 16px;
+}
+
+.site-header .nav a {
+  font-size: 12.5px;
+  color: #b9b6d6;
+  text-decoration: none;
+}
+
+.site-footer {
+  max-width: 720px;
+  margin: 40px auto 0;
+  padding: 20px 20px 48px;
+  border-top: 1px solid #2e2e5c;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  font-size: 11.5px;
+  color: #6e6b96;
+  text-decoration: none;
+}
+
+.footer-note {
+  font-size: 11px;
+  color: #55527c;
+  margin: 0;
+}
+
+.content-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 36px 20px 60px;
+}
+
+.content-page h1 {
+  font-family: "Fraunces", serif;
+  font-size: 26px;
+  margin: 0 0 20px;
+}
+
+.content-page h2 {
+  font-size: 16px;
+  color: #f2b84b;
+  margin: 28px 0 10px;
+}
+
+.content-page p,
+.content-page li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #d9d6ee;
+}
+
+.content-page .faq-item {
+  margin-bottom: 18px;
+}
+
+.content-page .faq-q {
+  font-size: 14.5px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #f6f3ed;
+}
