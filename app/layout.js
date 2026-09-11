@@ -33,6 +33,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        <meta
+          name="google-site-verification"
+          content="Mj90tiyP9sBN6uiQ3VRupUk_xHpjOdI3PCdU7dO0ufg"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
           rel="stylesheet"
