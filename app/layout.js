@@ -17,6 +17,7 @@ export const metadata = {
 
 const NAV_LINKS = [
   { href: "/", label: "홈" },
+  { href: "/examples", label: "예시모음" },
   { href: "/categories", label: "카테고리" },
   { href: "/faq", label: "FAQ" },
   { href: "/about", label: "소개" },
@@ -24,7 +25,9 @@ const NAV_LINKS = [
 
 const FOOTER_LINKS = [
   { href: "/about", label: "소개" },
+  { href: "/examples", label: "예시모음" },
   { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "문의" },
   { href: "/terms", label: "이용약관" },
   { href: "/privacy-policy", label: "개인정보처리방침" },
 ];
