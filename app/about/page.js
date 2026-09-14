@@ -1,6 +1,47 @@
-import HomeClient from "./home-client";
+export const metadata = {
+  title: "소개 | whatoddly",
+  description: "whatoddly가 어떻게 작동하는지, 왜 만들어졌는지 소개합니다.",
+};
 
-export default function Page({ searchParams }) {
-  const q = typeof searchParams?.q === "string" ? searchParams.q : "";
-  return <HomeClient initialQuery={q} />;
+export default function AboutPage() {
+  return (
+    <div className="content-page">
+      <h1>whatoddly 소개</h1>
+
+      <h2>이 사이트는 무엇인가요?</h2>
+      <p>
+        whatoddly는 궁금한 상황을 문장으로 입력하면, 그 일이 일어날 확률을 재미있게
+        알려주는 엔터테인먼트 사이트입니다. "코끼리가 점프할 확률"처럼 현실적으로
+        답하기 어려운 질문부터 "내일 지각할 확률"처럼 누구나 한 번쯤 궁금해하는
+        질문까지 자유롭게 입력해보세요.
+      </p>
+
+      <h2>확률은 어떻게 계산되나요?</h2>
+      <p>
+        whatoddly는 입력한 문장을 고유한 값(시드)으로 변환한 뒤, 문장에 담긴 핵심
+        단어를 분석해 여섯 가지 카테고리로 분류합니다. 같은 문장을 입력하면 언제나
+        같은 결과가 나오도록 설계되어 있어, 친구와 같은 질문을 입력해서 결과를
+        비교해볼 수 있습니다.
+      </p>
+      <p>
+        중요: whatoddly가 보여주는 숫자는 통계학적 근거나 과학적 분석에 기반한
+        예측치가 아닙니다. 재미로 즐기는 콘텐츠이며, 실제 의사결정의 근거로
+        사용해서는 안 됩니다.
+      </p>
+
+      <h2>왜 만들었나요?</h2>
+      <p>
+        "이게 진짜 일어날 확률이 얼마나 될까?"라는 질문은 일상에서 자주 떠오르지만,
+        정색하고 답할 만한 질문은 아닙니다. whatoddly는 그런 가벼운 궁금증에
+        그럴듯하면서도 유쾌한 답을 주기 위해 만들어졌습니다.
+      </p>
+
+      <h2>문의</h2>
+      <p>
+        서비스 이용 중 궁금한 점이나 제안하고 싶은 내용이 있다면 언제든 연락 주세요.
+        <br />
+        이메일: contact@whatoddly.com
+      </p>
+    </div>
+  );
 }
