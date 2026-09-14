@@ -2,6 +2,7 @@ export const metadata = {
   title: "확률 카테고리 설명 | whatoddly",
   description:
     "whatoddly의 여섯 가지 확률 카테고리(불가능계·극희귀계·낮음·반반·높음·거의확실)를 설명합니다.",
+  alternates: { canonical: "/categories" },
 };
 
 const CATEGORY_INFO = [
