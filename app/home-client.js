@@ -26,6 +26,68 @@ const CONFETTI_COLORS = [
   "#F2B84B",
 ];
 
+const RARITY_INFO = {
+  common: { label: "COMMON", color: "#9CA3AF", flavor: "흔하지만 나쁘지 않은 결과예요." },
+  uncommon: { label: "UNCOMMON", color: "#3E9C8C", flavor: "오, 살짝 특별한데요?" },
+  rare: { label: "RARE", color: "#4C8DF2", flavor: "이건 꽤 보기 힘든 결과예요." },
+  epic: { label: "EPIC", color: "#8A6FE8", flavor: "축하해요, 상당히 희귀한 결과입니다." },
+  legendary: { label: "LEGENDARY", color: "#F2B84B", flavor: "이 정도면 자랑해도 됩니다." },
+  mythic: { label: "MYTHIC", color: "#F26B5B", flavor: "이건 일어나면 주변 사람들에게 바로 알려야 합니다." },
+};
+
+const RARITY_WEIGHTS = { common: 40, uncommon: 25, rare: 15, epic: 10, legendary: 6, mythic: 4 };
+
+const DEX_ITEMS = [
+  { id: "d01", query: "오늘 하루가 무난하게 지나갈 확률", rarity: "common" },
+  { id: "d02", query: "오늘 저녁에 뭘 먹을지 고민할 확률", rarity: "common" },
+  { id: "d03", query: "오늘 커피를 마실 확률", rarity: "common" },
+  { id: "d04", query: "오늘 문자를 받을 확률", rarity: "common" },
+  { id: "d05", query: "오늘 날씨를 확인할 확률", rarity: "common" },
+  { id: "d06", query: "오늘 물을 마실 확률", rarity: "common" },
+  { id: "d07", query: "오늘 화장실에 갈 확률", rarity: "common" },
+  { id: "d08", query: "오늘 핸드폰을 5분 이상 볼 확률", rarity: "common" },
+  { id: "d09", query: "오늘 누군가와 대화할 확률", rarity: "common" },
+  { id: "d10", query: "오늘 웃을 일이 생길 확률", rarity: "common" },
+  { id: "d11", query: "오늘 길에서 돈을 주울 확률", rarity: "uncommon" },
+  { id: "d12", query: "오늘 좋은 일이 생길 확률", rarity: "uncommon" },
+  { id: "d13", query: "무인도에서 살아남을 확률", rarity: "uncommon" },
+  { id: "d14", query: "평생 한 번도 지각하지 않을 확률", rarity: "uncommon" },
+  { id: "d15", query: "꿈에서 본 일이 실제로 일어날 확률", rarity: "uncommon" },
+  { id: "d16", query: "갑자기 부자가 될 확률", rarity: "uncommon" },
+  { id: "d17", query: "길에서 연예인을 만날 확률", rarity: "rare" },
+  { id: "d18", query: "첫눈에 반할 확률", rarity: "rare" },
+  { id: "d19", query: "벼락을 맞을 확률", rarity: "rare" },
+  { id: "d20", query: "갑자기 유명인이 될 확률", rarity: "rare" },
+  { id: "d21", query: "로또 1등에 당첨될 확률", rarity: "rare" },
+  { id: "d22", query: "초능력이 생길 확률", rarity: "rare" },
+  { id: "d23", query: "UFO를 볼 확률", rarity: "epic" },
+  { id: "d24", query: "외계인을 만날 확률", rarity: "epic" },
+  { id: "d25", query: "시간여행을 할 확률", rarity: "epic" },
+  { id: "d26", query: "평행세계로 넘어갈 확률", rarity: "epic" },
+  { id: "d27", query: "지구가 멈추는 걸 목격할 확률", rarity: "legendary" },
+  { id: "d28", query: "타임머신을 발명할 확률", rarity: "legendary" },
+  { id: "d29", query: "신을 만날 확률", rarity: "mythic" },
+  { id: "d30", query: "우주의 끝을 보는 확률", rarity: "mythic" },
+];
+
+function drawDexItem() {
+  const tiers = Object.keys(RARITY_WEIGHTS);
+  const total = tiers.reduce((sum, t) => sum + RARITY_WEIGHTS[t], 0);
+  let r = Math.random() * total;
+  let chosenTier = tiers[0];
+  for (const t of tiers) {
+    if (r < RARITY_WEIGHTS[t]) {
+      chosenTier = t;
+      break;
+    }
+    r -= RARITY_WEIGHTS[t];
+  }
+  const pool = DEX_ITEMS.filter((d) => d.rarity === chosenTier);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const DEX_STORAGE_KEY = "whatoddly_dex_v1";
+
 export default function HomeClient({ initialQuery }) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState(null);
@@ -33,6 +95,70 @@ export default function HomeClient({ initialQuery }) {
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [discovered, setDiscovered] = useState([]);
+  const [showDex, setShowDex] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DEX_STORAGE_KEY) || "[]");
+      if (Array.isArray(saved)) setDiscovered(saved);
+    } catch {}
+  }, []);
+
+  const saveDiscovered = (id) => {
+    setDiscovered((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      try {
+        localStorage.setItem(DEX_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleDexDraw = () => {
+    const item = drawDexItem();
+    const r = computeResult(item.query);
+    const merged = { ...r, rarity: item.rarity, dexId: item.id };
+    setQuery(item.query);
+    setResult(merged);
+    setHistory((prev) => {
+      const next = [
+        { query: item.query, percent: r.percent, label: r.category.label },
+        ...prev.filter((h) => h.query !== item.query),
+      ];
+      return next.slice(0, 5);
+    });
+    saveDiscovered(item.id);
+  };
+
+  const openDexItem = (item) => {
+    const r = computeResult(item.query);
+    setQuery(item.query);
+    setResult({ ...r, rarity: item.rarity, dexId: item.id });
+  };
+
+  const handleShare = async () => {
+    const url = `${
+      typeof window !== "undefined" ? window.location.origin : ""
+    }/?q=${encodeURIComponent(query)}`;
+    const rarityLabel = result?.rarity ? RARITY_INFO[result.rarity].label + " · " : "";
+    const text = `"${query}" 확률은 ${result?.percent}% (${rarityLabel}${result?.category?.label}) — whatoddly에서 확인해보세요`;
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: "whatoddly", text, url });
+        return;
+      } catch {
+        // 사용자가 공유를 취소한 경우 등 — 조용히 링크 복사로 넘어감
+      }
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }
+  };
 
   const draw = (text) => {
     if (isSensitive(text)) {
@@ -76,17 +202,6 @@ export default function HomeClient({ initialQuery }) {
     setResult(null);
     setQuery("");
     setCopied(false);
-  };
-
-  const handleCopy = () => {
-    const url = `${
-      typeof window !== "undefined" ? window.location.origin : ""
-    }/?q=${encodeURIComponent(query)}`;
-    if (navigator?.clipboard) {
-      navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    }
   };
 
   return (
@@ -164,6 +279,96 @@ export default function HomeClient({ initialQuery }) {
         </div>
       </form>
 
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <button
+          onClick={handleDexDraw}
+          style={{
+            flex: 1,
+            background: "#26264D",
+            border: "1px solid #F2B84B",
+            color: "#F2B84B",
+            borderRadius: 12,
+            padding: "12px 0",
+            fontWeight: 700,
+            fontSize: 14.5,
+            cursor: "pointer",
+          }}
+        >
+          🎲 랜덤 확률 뽑기
+        </button>
+      </div>
+
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <button
+          onClick={() => setShowDex((v) => !v)}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#B9B6D6",
+            fontSize: 12.5,
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+        >
+          📖 확률 도감 · {discovered.length} / {DEX_ITEMS.length} 발견 (수집률{" "}
+          {Math.round((discovered.length / DEX_ITEMS.length) * 100)}%)
+        </button>
+      </div>
+
+      {showDex && (
+        <div
+          style={{
+            marginBottom: 24,
+            background: "#20203F",
+            border: "1px solid #2E2E5C",
+            borderRadius: 14,
+            padding: 14,
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {DEX_ITEMS.map((item) => {
+              const found = discovered.includes(item.id);
+              const info = RARITY_INFO[item.rarity];
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => found && openDexItem(item)}
+                  style={{
+                    textAlign: "left",
+                    background: "#24244A",
+                    border: "1px solid " + (found ? info.color : "#34346A"),
+                    borderRadius: 10,
+                    padding: "9px 10px",
+                    cursor: found ? "pointer" : "default",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      color: found ? info.color : "#5E5B85",
+                      marginBottom: 4,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {info.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      lineHeight: 1.4,
+                      color: found ? "#D9D6EE" : "#5E5B85",
+                    }}
+                  >
+                    {found ? item.query : "???"}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {!result && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
           {EXAMPLES.map((ex) => (
@@ -228,7 +433,9 @@ export default function HomeClient({ initialQuery }) {
         <div
           key={query}
           className={
-            result.category.id === "impossible"
+            result.rarity === "legendary" || result.rarity === "mythic"
+              ? "result-glow"
+              : result.category.id === "impossible"
               ? "result-shake"
               : result.category.id === "high"
               ? "result-glow"
@@ -259,6 +466,23 @@ export default function HomeClient({ initialQuery }) {
                   }}
                 />
               ))}
+            </div>
+          )}
+          {result.rarity && (
+            <div
+              style={{
+                display: "inline-block",
+                background: RARITY_INFO[result.rarity].color,
+                color: "#1B1B3A",
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                borderRadius: 6,
+                padding: "3px 8px",
+                marginBottom: 8,
+              }}
+            >
+              {RARITY_INFO[result.rarity].label}
             </div>
           )}
           <div style={{ fontSize: 12, letterSpacing: 0.5, color: "#7A7791", marginBottom: 4 }}>
@@ -292,6 +516,11 @@ export default function HomeClient({ initialQuery }) {
           >
             {result.category.label}
           </div>
+          {result.rarity && (
+            <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: "#5A5644", margin: "0 0 10px" }}>
+              {RARITY_INFO[result.rarity].flavor}
+            </p>
+          )}
           <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#3A3752", margin: "0 0 14px" }}>
             {result.reason}
           </p>
@@ -312,7 +541,7 @@ export default function HomeClient({ initialQuery }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={handleCopy}
+              onClick={handleShare}
               style={{
                 flex: 1,
                 display: "flex",
@@ -329,7 +558,7 @@ export default function HomeClient({ initialQuery }) {
                 cursor: "pointer",
               }}
             >
-              <Share2 size={14} /> {copied ? "복사됨!" : "링크 복사"}
+              <Share2 size={14} /> {copied ? "복사됨!" : "공유하기"}
             </button>
             <button
               onClick={handleReset}
@@ -351,6 +580,23 @@ export default function HomeClient({ initialQuery }) {
               <RotateCcw size={14} /> 다시
             </button>
           </div>
+          <button
+            onClick={handleDexDraw}
+            style={{
+              width: "100%",
+              marginTop: 8,
+              background: "transparent",
+              color: "#F2B84B",
+              border: "1px dashed #F2B84B",
+              borderRadius: 10,
+              padding: "9px 0",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            🎲 다른 확률 뽑기
+          </button>
         </div>
       )}
 
