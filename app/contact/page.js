@@ -1,6 +1,7 @@
 export const metadata = {
   title: "문의 | whatoddly",
   description: "whatoddly에 궁금한 점이나 의견을 보내는 방법을 안내합니다.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {
