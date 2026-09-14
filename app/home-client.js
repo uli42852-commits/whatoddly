@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sparkles, Share2, RotateCcw } from "lucide-react";
 import {
   CATEGORIES,
@@ -88,6 +88,108 @@ function drawDexItem() {
 
 const DEX_STORAGE_KEY = "whatoddly_dex_v1";
 
+// ---------- 탐색권(에너지) 시스템 ----------
+const ENERGY_KEY = "whatoddly_energy_v1";
+const HINTS_KEY = "whatoddly_hints_v1";
+const MAX_ENERGY = 3;
+const REFILL_MS = 5 * 60 * 1000; // 5분
+const HINT_THRESHOLD = 5;
+
+const ACTION_REDUCE_SEC = { search: 1, dexView: 1, share: 3 };
+const ACTION_COOLDOWN_MS = { search: 3000, dexView: 3000, share: 5000 };
+
+const DEX_HINTS = {
+  d01: "특별할 것 없는 하루와 관련이 있습니다.",
+  d02: "먹는 것에 대한 고민과 관련이 있습니다.",
+  d03: "따뜻한 음료와 관련이 있습니다.",
+  d04: "휴대폰 알림과 관련이 있습니다.",
+  d05: "하늘 위 날씨와 관련이 있습니다.",
+  d06: "목을 축이는 것과 관련이 있습니다.",
+  d07: "급한 볼일과 관련이 있습니다.",
+  d08: "화면을 오래 보는 습관과 관련이 있습니다.",
+  d09: "누군가와의 대화와 관련이 있습니다.",
+  d10: "웃음이 나는 순간과 관련이 있습니다.",
+  d11: "길에서 줍는 무언가와 관련이 있습니다.",
+  d12: "좋은 일이 생기는 것과 관련이 있습니다.",
+  d13: "외딴 섬과 관련이 있습니다.",
+  d14: "시간 약속과 관련이 있습니다.",
+  d15: "잠들었을 때 보는 것과 관련이 있습니다.",
+  d16: "갑자기 생기는 재산과 관련이 있습니다.",
+  d17: "유명한 사람과의 만남과 관련이 있습니다.",
+  d18: "마음을 빼앗기는 순간과 관련이 있습니다.",
+  d19: "하늘에서 내려치는 무언가와 관련이 있습니다.",
+  d20: "갑자기 주목받는 것과 관련이 있습니다.",
+  d21: "종이 한 장의 행운과 관련이 있습니다.",
+  d22: "평범하지 않은 힘과 관련이 있습니다.",
+  d23: "밤하늘의 낯선 물체와 관련이 있습니다.",
+  d24: "지구 밖 존재와 관련이 있습니다.",
+  d25: "시간을 거스르는 것과 관련이 있습니다.",
+  d26: "또 다른 세계와 관련이 있습니다.",
+  d27: "행성 전체와 관련이 있습니다.",
+  d28: "직접 만든 기계와 관련이 있습니다.",
+  d29: "이 세상 존재가 아닌 무언가와 관련이 있습니다.",
+  d30: "모든 것의 끝과 관련이 있습니다.",
+};
+
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function getTodayDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function loadEnergyRaw() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ENERGY_KEY));
+    if (raw && typeof raw.count === "number" && typeof raw.lastRefillAt === "number") {
+      return raw;
+    }
+  } catch {}
+  return { count: MAX_ENERGY, lastRefillAt: Date.now() };
+}
+
+function applyRegen(state) {
+  if (state.count >= MAX_ENERGY) return { count: MAX_ENERGY, lastRefillAt: Date.now() };
+  const elapsed = Date.now() - state.lastRefillAt;
+  const gained = Math.floor(elapsed / REFILL_MS);
+  if (gained <= 0) return state;
+  const newCount = Math.min(MAX_ENERGY, state.count + gained);
+  if (newCount >= MAX_ENERGY) return { count: MAX_ENERGY, lastRefillAt: Date.now() };
+  return { count: newCount, lastRefillAt: state.lastRefillAt + gained * REFILL_MS };
+}
+
+function pickWeightedDistinct(n, boostId) {
+  const pool = [...DEX_ITEMS];
+  const picks = [];
+  for (let i = 0; i < n && pool.length > 0; i++) {
+    const weights = pool.map((it) => {
+      const base = RARITY_WEIGHTS[it.rarity];
+      return it.id === boostId ? base * 1.5 : base;
+    });
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    let idx = 0;
+    for (; idx < pool.length; idx++) {
+      if (r < weights[idx]) break;
+      r -= weights[idx];
+    }
+    picks.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+  return picks;
+}
+
+function formatMMSS(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 function DexImage({ src, alt, size }) {
   const [failed, setFailed] = useState(false);
   if (failed || !src) {
@@ -135,13 +237,76 @@ export default function HomeClient({ initialQuery }) {
   const [discovered, setDiscovered] = useState([]);
   const [showDex, setShowDex] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
+  const [duplicateNotice, setDuplicateNotice] = useState(false);
+  const [energy, setEnergy] = useState({ count: MAX_ENERGY, lastRefillAt: Date.now() });
+  const [hints, setHints] = useState(0);
+  const [hintText, setHintText] = useState("");
+  const [exploreCards, setExploreCards] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  const [dailyFeaturedId] = useState(
+    () => DEX_ITEMS[simpleHash(getTodayDateStr()) % DEX_ITEMS.length].id
+  );
+  const energyRef = useRef(energy);
+  energyRef.current = energy;
+  const lastActionAtRef = useRef({});
 
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(DEX_STORAGE_KEY) || "[]");
       if (Array.isArray(saved)) setDiscovered(saved);
     } catch {}
+    setEnergy(applyRegen(loadEnergyRaw()));
+    try {
+      const savedHints = parseInt(localStorage.getItem(HINTS_KEY), 10);
+      if (!Number.isNaN(savedHints)) setHints(savedHints);
+    } catch {}
   }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(Date.now());
+      setEnergy((prev) => {
+        const next = applyRegen(prev);
+        if (next.count !== prev.count || next.lastRefillAt !== prev.lastRefillAt) {
+          try {
+            localStorage.setItem(ENERGY_KEY, JSON.stringify(next));
+          } catch {}
+          return next;
+        }
+        return prev;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const saveEnergy = (next) => {
+    setEnergy(next);
+    try {
+      localStorage.setItem(ENERGY_KEY, JSON.stringify(next));
+    } catch {}
+  };
+
+  const saveHints = (next) => {
+    setHints(next);
+    try {
+      localStorage.setItem(HINTS_KEY, String(next));
+    } catch {}
+  };
+
+  const applyActivityBonus = (type, seconds) => {
+    const cooldown = ACTION_COOLDOWN_MS[type] || 0;
+    const last = lastActionAtRef.current[type] || 0;
+    const nowTs = Date.now();
+    if (nowTs - last < cooldown) return;
+    lastActionAtRef.current[type] = nowTs;
+
+    const current = applyRegen(energyRef.current);
+    if (current.count >= MAX_ENERGY) {
+      saveEnergy(current);
+      return;
+    }
+    saveEnergy(applyRegen({ count: current.count, lastRefillAt: current.lastRefillAt - seconds * 1000 }));
+  };
 
   const saveDiscovered = (id) => {
     const isNew = !discovered.includes(id);
@@ -155,12 +320,27 @@ export default function HomeClient({ initialQuery }) {
     return isNew;
   };
 
-  const handleDexDraw = () => {
-    const item = drawDexItem();
+  const startExploration = () => {
+    const current = applyRegen(energyRef.current);
+    if (current.count <= 0) {
+      saveEnergy(current);
+      return;
+    }
+    saveEnergy({
+      count: current.count - 1,
+      lastRefillAt: current.count - 1 >= MAX_ENERGY ? Date.now() : current.lastRefillAt,
+    });
+    setResult(null);
+    setDuplicateNotice(false);
+    setExploreCards(pickWeightedDistinct(3, dailyFeaturedId));
+  };
+
+  const selectCard = (item) => {
     const r = computeResult(item.query);
     const merged = { ...r, rarity: item.rarity, dexId: item.id, dexImage: item.image };
     setQuery(item.query);
     setResult(merged);
+    setExploreCards(null);
     setHistory((prev) => {
       const next = [
         { query: item.query, percent: r.percent, label: r.category.label },
@@ -171,17 +351,37 @@ export default function HomeClient({ initialQuery }) {
     const isNew = saveDiscovered(item.id);
     if (isNew) {
       setJustUnlocked(true);
+      setDuplicateNotice(false);
+      applyActivityBonus("newDiscovery", 5);
       setTimeout(() => setJustUnlocked(false), 1200);
     } else {
       setJustUnlocked(false);
+      setDuplicateNotice(true);
+      saveHints(hints + 1);
+      setTimeout(() => setDuplicateNotice(false), 1600);
     }
+  };
+
+  const revealHint = () => {
+    if (hints < HINT_THRESHOLD) return;
+    const undiscoveredIds = DEX_ITEMS.filter((i) => !discovered.includes(i.id)).map((i) => i.id);
+    if (undiscoveredIds.length === 0) {
+      setHintText("이미 모든 도감을 발견하셨어요!");
+      return;
+    }
+    const pickId = undiscoveredIds[Math.floor(Math.random() * undiscoveredIds.length)];
+    setHintText(DEX_HINTS[pickId] || "곧 만나게 될 거예요.");
+    saveHints(hints - HINT_THRESHOLD);
   };
 
   const openDexItem = (item) => {
     const r = computeResult(item.query);
     setJustUnlocked(false);
+    setDuplicateNotice(false);
+    setExploreCards(null);
     setQuery(item.query);
     setResult({ ...r, rarity: item.rarity, dexId: item.id, dexImage: item.image });
+    applyActivityBonus("dexView", 1);
   };
 
   const handleShare = async () => {
@@ -194,6 +394,7 @@ export default function HomeClient({ initialQuery }) {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title: "whatoddly", text, url });
+        applyActivityBonus("share", 3);
         return;
       } catch {
         // 사용자가 공유를 취소한 경우 등 — 조용히 링크 복사로 넘어감
@@ -202,6 +403,7 @@ export default function HomeClient({ initialQuery }) {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(url);
       setCopied(true);
+      applyActivityBonus("share", 3);
       setTimeout(() => setCopied(false), 1800);
     }
   };
@@ -210,11 +412,13 @@ export default function HomeClient({ initialQuery }) {
     if (isSensitive(text)) {
       setQuery(text);
       setResult({ sensitive: true });
+      setExploreCards(null);
       return;
     }
     const r = computeResult(text);
     setQuery(text);
     setResult(r);
+    setExploreCards(null);
     setHistory((prev) => {
       const next = [
         { query: text, percent: r.percent, label: r.category.label },
@@ -222,6 +426,7 @@ export default function HomeClient({ initialQuery }) {
       ];
       return next.slice(0, 5);
     });
+    applyActivityBonus("search", 1);
   };
 
   useEffect(() => {
@@ -248,6 +453,8 @@ export default function HomeClient({ initialQuery }) {
     setResult(null);
     setQuery("");
     setCopied(false);
+    setExploreCards(null);
+    setDuplicateNotice(false);
   };
 
   return (
@@ -325,26 +532,145 @@ export default function HomeClient({ initialQuery }) {
         </div>
       </form>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button
-          onClick={handleDexDraw}
+      <div
+        style={{
+          background: "#26264D",
+          border: "1px solid #3A3A6B",
+          borderRadius: 14,
+          padding: 14,
+          marginBottom: 20,
+        }}
+      >
+        <div
           style={{
-            flex: 1,
-            background: "#26264D",
-            border: "1px solid #F2B84B",
-            color: "#F2B84B",
-            borderRadius: 12,
-            padding: "12px 0",
-            fontWeight: 700,
-            fontSize: 14.5,
-            cursor: "pointer",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
           }}
         >
-          🎲 랜덤 확률 뽑기
-        </button>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#F6F3ED" }}>
+            🎲 오늘의 확률 탐색
+          </div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: 15,
+                  opacity: i < energy.count ? 1 : 0.25,
+                }}
+              >
+                🎫
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11.5, color: "#8A87B0", marginBottom: 10 }}>
+          🌟 오늘은 특별한 확률이 기다리고 있어요.
+        </div>
+
+        {exploreCards ? (
+          <>
+            <div style={{ fontSize: 12.5, color: "#B9B6D6", marginBottom: 10, textAlign: "center" }}>
+              어떤 운명을 선택하시겠습니까?
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {exploreCards.map((item, i) => (
+                <button
+                  key={item.id}
+                  className="result-pop"
+                  onClick={() => selectCard(item)}
+                  style={{
+                    flex: 1,
+                    aspectRatio: "3 / 4",
+                    background: "#1B1B3A",
+                    border: "1px solid #F2B84B",
+                    borderRadius: 12,
+                    color: "#F2B84B",
+                    fontSize: 22,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {["A", "B", "C"][i]}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : energy.count > 0 ? (
+          <button
+            onClick={startExploration}
+            style={{
+              width: "100%",
+              background: "#1B1B3A",
+              border: "1px solid #F2B84B",
+              color: "#F2B84B",
+              borderRadius: 12,
+              padding: "12px 0",
+              fontWeight: 700,
+              fontSize: 14.5,
+              cursor: "pointer",
+            }}
+          >
+            탐색 시작 (탐색권 {energy.count}개)
+          </button>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              textAlign: "center",
+              background: "#1B1B3A",
+              border: "1px solid #3A3A6B",
+              color: "#7A7791",
+              borderRadius: 12,
+              padding: "12px 0",
+              fontSize: 13,
+            }}
+          >
+            ⏳ 다음 탐색권 충전까지 {formatMMSS(REFILL_MS - (now - energy.lastRefillAt))}
+          </div>
+        )}
+
+        {hints > 0 && (
+          <div
+            style={{
+              marginTop: 10,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 11.5,
+              color: "#8A87B0",
+            }}
+          >
+            <span>🔍 힌트 조각 {hints}개</span>
+            {hints >= HINT_THRESHOLD && (
+              <button
+                onClick={revealHint}
+                style={{
+                  background: "transparent",
+                  border: "1px solid #3E9C8C",
+                  color: "#3E9C8C",
+                  borderRadius: 8,
+                  padding: "3px 8px",
+                  fontSize: 11,
+                  cursor: "pointer",
+                }}
+              >
+                힌트 보기 (-{HINT_THRESHOLD})
+              </button>
+            )}
+          </div>
+        )}
+        {hintText && (
+          <div style={{ marginTop: 8, fontSize: 12, color: "#3E9C8C", lineHeight: 1.5 }}>
+            🔍 미발견 도감 힌트: {hintText}
+          </div>
+        )}
       </div>
 
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
         <button
           onClick={() => setShowDex((v) => !v)}
           style={{
@@ -359,6 +685,24 @@ export default function HomeClient({ initialQuery }) {
           📖 확률 도감 · {discovered.length} / {DEX_ITEMS.length} 발견 (수집률{" "}
           {Math.round((discovered.length / DEX_ITEMS.length) * 100)}%)
         </button>
+      </div>
+      <div
+        style={{
+          height: 6,
+          borderRadius: 4,
+          background: "#26264D",
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${Math.round((discovered.length / DEX_ITEMS.length) * 100)}%`,
+            background: "#F2B84B",
+            transition: "width 0.3s ease",
+          }}
+        />
       </div>
 
       {showDex && (
@@ -562,6 +906,16 @@ export default function HomeClient({ initialQuery }) {
               )}
             </div>
           )}
+          {result.dexId && justUnlocked && (
+            <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: "#F26B5B", marginBottom: 10 }}>
+              ✨ 새로운 도감 발견!
+            </div>
+          )}
+          {result.dexId && duplicateNotice && (
+            <div style={{ textAlign: "center", fontSize: 12, color: "#8A8672", marginBottom: 10 }}>
+              🔄 이미 발견한 도감입니다 · 힌트 조각 +1
+            </div>
+          )}
           {result.rarity && (
             <div
               style={{
@@ -675,7 +1029,7 @@ export default function HomeClient({ initialQuery }) {
             </button>
           </div>
           <button
-            onClick={handleDexDraw}
+            onClick={startExploration}
             style={{
               width: "100%",
               marginTop: 8,
