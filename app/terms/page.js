@@ -1,5 +1,6 @@
 export const metadata = {
   title: "이용약관 | whatoddly",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
