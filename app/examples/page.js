@@ -4,6 +4,7 @@ export const metadata = {
   title: "인기 확률 질문 모음 | whatoddly",
   description:
     "whatoddly에서 많이 물어보는 질문들을 카테고리별로 모아봤어요. 궁금한 질문을 눌러서 바로 결과를 확인해보세요.",
+  alternates: { canonical: "/examples" },
 };
 
 export default function ExamplesPage() {
