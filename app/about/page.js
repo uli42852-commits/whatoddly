@@ -1,6 +1,7 @@
 export const metadata = {
   title: "소개 | whatoddly",
   description: "whatoddly가 어떻게 작동하는지, 왜 만들어졌는지 소개합니다.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {
