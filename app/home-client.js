@@ -38,36 +38,36 @@ const RARITY_INFO = {
 const RARITY_WEIGHTS = { common: 40, uncommon: 25, rare: 15, epic: 10, legendary: 6, mythic: 4 };
 
 const DEX_ITEMS = [
-  { id: "d01", query: "오늘 하루가 무난하게 지나갈 확률", rarity: "common" },
-  { id: "d02", query: "오늘 저녁에 뭘 먹을지 고민할 확률", rarity: "common" },
-  { id: "d03", query: "오늘 커피를 마실 확률", rarity: "common" },
-  { id: "d04", query: "오늘 문자를 받을 확률", rarity: "common" },
-  { id: "d05", query: "오늘 날씨를 확인할 확률", rarity: "common" },
-  { id: "d06", query: "오늘 물을 마실 확률", rarity: "common" },
-  { id: "d07", query: "오늘 화장실에 갈 확률", rarity: "common" },
-  { id: "d08", query: "오늘 핸드폰을 5분 이상 볼 확률", rarity: "common" },
-  { id: "d09", query: "오늘 누군가와 대화할 확률", rarity: "common" },
-  { id: "d10", query: "오늘 웃을 일이 생길 확률", rarity: "common" },
-  { id: "d11", query: "오늘 길에서 돈을 주울 확률", rarity: "uncommon" },
-  { id: "d12", query: "오늘 좋은 일이 생길 확률", rarity: "uncommon" },
-  { id: "d13", query: "무인도에서 살아남을 확률", rarity: "uncommon" },
-  { id: "d14", query: "평생 한 번도 지각하지 않을 확률", rarity: "uncommon" },
-  { id: "d15", query: "꿈에서 본 일이 실제로 일어날 확률", rarity: "uncommon" },
-  { id: "d16", query: "갑자기 부자가 될 확률", rarity: "uncommon" },
-  { id: "d17", query: "길에서 연예인을 만날 확률", rarity: "rare" },
-  { id: "d18", query: "첫눈에 반할 확률", rarity: "rare" },
-  { id: "d19", query: "벼락을 맞을 확률", rarity: "rare" },
-  { id: "d20", query: "갑자기 유명인이 될 확률", rarity: "rare" },
-  { id: "d21", query: "로또 1등에 당첨될 확률", rarity: "rare" },
-  { id: "d22", query: "초능력이 생길 확률", rarity: "rare" },
-  { id: "d23", query: "UFO를 볼 확률", rarity: "epic" },
-  { id: "d24", query: "외계인을 만날 확률", rarity: "epic" },
-  { id: "d25", query: "시간여행을 할 확률", rarity: "epic" },
-  { id: "d26", query: "평행세계로 넘어갈 확률", rarity: "epic" },
-  { id: "d27", query: "지구가 멈추는 걸 목격할 확률", rarity: "legendary" },
-  { id: "d28", query: "타임머신을 발명할 확률", rarity: "legendary" },
-  { id: "d29", query: "신을 만날 확률", rarity: "mythic" },
-  { id: "d30", query: "우주의 끝을 보는 확률", rarity: "mythic" },
+  { id: "d01", query: "오늘 하루가 무난하게 지나갈 확률", rarity: "common", image: "/images/dex/d01.webp" },
+  { id: "d02", query: "오늘 저녁에 뭘 먹을지 고민할 확률", rarity: "common", image: "/images/dex/d02.webp" },
+  { id: "d03", query: "오늘 커피를 마실 확률", rarity: "common", image: "/images/dex/d03.webp" },
+  { id: "d04", query: "오늘 문자를 받을 확률", rarity: "common", image: "/images/dex/d04.webp" },
+  { id: "d05", query: "오늘 날씨를 확인할 확률", rarity: "common", image: "/images/dex/d05.webp" },
+  { id: "d06", query: "오늘 물을 마실 확률", rarity: "common", image: "/images/dex/d06.webp" },
+  { id: "d07", query: "오늘 화장실에 갈 확률", rarity: "common", image: "/images/dex/d07.webp" },
+  { id: "d08", query: "오늘 핸드폰을 5분 이상 볼 확률", rarity: "common", image: "/images/dex/d08.webp" },
+  { id: "d09", query: "오늘 누군가와 대화할 확률", rarity: "common", image: "/images/dex/d09.webp" },
+  { id: "d10", query: "오늘 웃을 일이 생길 확률", rarity: "common", image: "/images/dex/d10.webp" },
+  { id: "d11", query: "오늘 길에서 돈을 주울 확률", rarity: "uncommon", image: "/images/dex/d11.webp" },
+  { id: "d12", query: "오늘 좋은 일이 생길 확률", rarity: "uncommon", image: "/images/dex/d12.webp" },
+  { id: "d13", query: "무인도에서 살아남을 확률", rarity: "uncommon", image: "/images/dex/d13.webp" },
+  { id: "d14", query: "평생 한 번도 지각하지 않을 확률", rarity: "uncommon", image: "/images/dex/d14.webp" },
+  { id: "d15", query: "꿈에서 본 일이 실제로 일어날 확률", rarity: "uncommon", image: "/images/dex/d15.webp" },
+  { id: "d16", query: "갑자기 부자가 될 확률", rarity: "uncommon", image: "/images/dex/d16.webp" },
+  { id: "d17", query: "길에서 연예인을 만날 확률", rarity: "rare", image: "/images/dex/d17.webp" },
+  { id: "d18", query: "첫눈에 반할 확률", rarity: "rare", image: "/images/dex/d18.webp" },
+  { id: "d19", query: "벼락을 맞을 확률", rarity: "rare", image: "/images/dex/d19.webp" },
+  { id: "d20", query: "갑자기 유명인이 될 확률", rarity: "rare", image: "/images/dex/d20.webp" },
+  { id: "d21", query: "로또 1등에 당첨될 확률", rarity: "rare", image: "/images/dex/d21.webp" },
+  { id: "d22", query: "초능력이 생길 확률", rarity: "rare", image: "/images/dex/d22.webp" },
+  { id: "d23", query: "UFO를 볼 확률", rarity: "epic", image: "/images/dex/d23.webp" },
+  { id: "d24", query: "외계인을 만날 확률", rarity: "epic", image: "/images/dex/d24.webp" },
+  { id: "d25", query: "시간여행을 할 확률", rarity: "epic", image: "/images/dex/d25.webp" },
+  { id: "d26", query: "평행세계로 넘어갈 확률", rarity: "epic", image: "/images/dex/d26.webp" },
+  { id: "d27", query: "지구가 멈추는 걸 목격할 확률", rarity: "legendary", image: "/images/dex/d27.webp" },
+  { id: "d28", query: "타임머신을 발명할 확률", rarity: "legendary", image: "/images/dex/d28.webp" },
+  { id: "d29", query: "신을 만날 확률", rarity: "mythic", image: "/images/dex/d29.webp" },
+  { id: "d30", query: "우주의 끝을 보는 확률", rarity: "mythic", image: "/images/dex/d30.webp" },
 ];
 
 function drawDexItem() {
@@ -88,6 +88,43 @@ function drawDexItem() {
 
 const DEX_STORAGE_KEY = "whatoddly_dex_v1";
 
+function DexImage({ src, alt, size }) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !src) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 10,
+          background: "#EDE9DD",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: size * 0.4,
+        }}
+      >
+        🎲
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 10,
+        objectFit: "cover",
+        display: "block",
+      }}
+    />
+  );
+}
+
 export default function HomeClient({ initialQuery }) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState(null);
@@ -97,6 +134,7 @@ export default function HomeClient({ initialQuery }) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [discovered, setDiscovered] = useState([]);
   const [showDex, setShowDex] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
 
   useEffect(() => {
     try {
@@ -106,20 +144,21 @@ export default function HomeClient({ initialQuery }) {
   }, []);
 
   const saveDiscovered = (id) => {
-    setDiscovered((prev) => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
+    const isNew = !discovered.includes(id);
+    if (isNew) {
+      const next = [...discovered, id];
+      setDiscovered(next);
       try {
         localStorage.setItem(DEX_STORAGE_KEY, JSON.stringify(next));
       } catch {}
-      return next;
-    });
+    }
+    return isNew;
   };
 
   const handleDexDraw = () => {
     const item = drawDexItem();
     const r = computeResult(item.query);
-    const merged = { ...r, rarity: item.rarity, dexId: item.id };
+    const merged = { ...r, rarity: item.rarity, dexId: item.id, dexImage: item.image };
     setQuery(item.query);
     setResult(merged);
     setHistory((prev) => {
@@ -129,13 +168,20 @@ export default function HomeClient({ initialQuery }) {
       ];
       return next.slice(0, 5);
     });
-    saveDiscovered(item.id);
+    const isNew = saveDiscovered(item.id);
+    if (isNew) {
+      setJustUnlocked(true);
+      setTimeout(() => setJustUnlocked(false), 1200);
+    } else {
+      setJustUnlocked(false);
+    }
   };
 
   const openDexItem = (item) => {
     const r = computeResult(item.query);
+    setJustUnlocked(false);
     setQuery(item.query);
-    setResult({ ...r, rarity: item.rarity, dexId: item.id });
+    setResult({ ...r, rarity: item.rarity, dexId: item.id, dexImage: item.image });
   };
 
   const handleShare = async () => {
@@ -342,6 +388,29 @@ export default function HomeClient({ initialQuery }) {
                     cursor: found ? "pointer" : "default",
                   }}
                 >
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+                    {found ? (
+                      <DexImage src={item.image} alt={`${item.query} 도감 이미지`} size={54} />
+                    ) : (
+                      <div
+                        style={{
+                          width: 54,
+                          height: 54,
+                          borderRadius: 10,
+                          background: "#15152C",
+                          border: "1px dashed " + info.color,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 18,
+                          color: info.color,
+                          opacity: 0.6,
+                        }}
+                      >
+                        ?
+                      </div>
+                    )}
+                  </div>
                   <div
                     style={{
                       fontSize: 9.5,
@@ -349,6 +418,7 @@ export default function HomeClient({ initialQuery }) {
                       color: found ? info.color : "#5E5B85",
                       marginBottom: 4,
                       letterSpacing: 0.5,
+                      textAlign: "center",
                     }}
                   >
                     {info.label}
@@ -358,6 +428,7 @@ export default function HomeClient({ initialQuery }) {
                       fontSize: 11.5,
                       lineHeight: 1.4,
                       color: found ? "#D9D6EE" : "#5E5B85",
+                      textAlign: "center",
                     }}
                   >
                     {found ? item.query : "???"}
@@ -466,6 +537,29 @@ export default function HomeClient({ initialQuery }) {
                   }}
                 />
               ))}
+            </div>
+          )}
+          {result.dexId && (
+            <div style={{ display: "flex", justifyContent: "center", position: "relative", marginBottom: 10 }}>
+              <DexImage src={result.dexImage} alt={`${query} 도감 이미지`} size={84} />
+              {justUnlocked && (
+                <div
+                  className="result-pop"
+                  style={{
+                    position: "absolute",
+                    top: -6,
+                    right: "calc(50% - 60px)",
+                    background: "#F26B5B",
+                    color: "#F6F3ED",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    borderRadius: 6,
+                    padding: "2px 6px",
+                  }}
+                >
+                  NEW!
+                </div>
+              )}
             </div>
           )}
           {result.rarity && (
